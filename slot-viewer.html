@@ -162,6 +162,15 @@
             businessName: "myKaarma",
             appointmentType: "appointment",
             webhookUrl: "",
+            metadata: {
+                MessageSid: "",
+                From: "",
+                To: "",
+                Body: "",
+                ButtonText: "",
+                ButtonPayload: "",
+                ProfileName: ""
+            },
             slots: {
                 "2024-11-18": [
                     { startTime: "9:00 AM", endTime: "10:00 AM" },
@@ -245,7 +254,7 @@
                         date,
                         startTime: slot.startTime,
                         endTime: slot.endTime
-                    }, data.webhookUrl));
+                    }, data.webhookUrl, data.metadata));
                     list.appendChild(btn);
                 });
 
@@ -258,7 +267,7 @@
             });
         }
 
-        async function bookSlot(slot, webhookUrl) {
+        async function bookSlot(slot, webhookUrl, metadata = {}) {
             if (!webhookUrl) {
                 showStatus("No webhook URL provided. Please configure one.", "error");
                 return;
@@ -268,7 +277,14 @@
                 slotId: slot.slotId,
                 date: slot.date || "",
                 startTime: slot.startTime,
-                endTime: slot.endTime
+                endTime: slot.endTime,
+                MessageSid: metadata?.MessageSid || "",
+                From: metadata?.From || "",
+                To: metadata?.To || "",
+                Body: metadata?.Body || "",
+                ButtonText: metadata?.ButtonText || "",
+                ButtonPayload: metadata?.ButtonPayload || "",
+                ProfileName: metadata?.ProfileName || ""
             };
 
             try {
