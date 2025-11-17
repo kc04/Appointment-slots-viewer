@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Choose Your Appointment Slot</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #0d1017;
+            --card: #151a24;
+            --accent: #4f46e5;
+            --accent-light: #7c74ff;
+            --text: #f4f6fb;
+            --muted: #9ba1b4;
+            --success: #16a34a;
+            --danger: #dc2626;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, rgba(79, 70, 229, 0.45), transparent 55%), var(--bg);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px 64px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        header h1 {
+            margin-bottom: 12px;
+            font-size: clamp(2rem, 6vw, 2.75rem);
+        }
+
+        header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .day-card {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .day-card h2 {
+            margin: 0;
+            font-size: 1.15rem;
+        }
+
+        .slot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .slot-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: rgba(79, 70, 229, 0.12);
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .slot-button:hover {
+            background: rgba(79, 70, 229, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .slot-button span {
+            font-weight: 600;
+        }
+
+        .slot-button small {
+            color: var(--muted);
+        }
+
+        .status {
+            margin-top: 32px;
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            background: rgba(22, 163, 74, 0.15);
+            color: var(--success);
+        }
+
+        .status.error {
+            background: rgba(220, 38, 38, 0.15);
+            color: var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            font-size: 1.1rem;
+            padding: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <p id="businessTagline">Select the time that works best for you</p>
+            <h1 id="pageTitle">Available Appointment Slots</h1>
+        </header>
+
+        <div id="slotsContainer" class="slots"></div>
+        <div id="status" class="status" role="status"></div>
+    </div>
+
+    <script>
+        /**
+         * This page expects a query param called "data" that contains a URI-encoded JSON string.
+         * Example payload:
+         * {
+         *   "businessName": "myKaarma",
+         *   "appointmentType": "Service",
+         *   "webhookUrl": "https://example.com/webhook",
+         *   "slots": {
+         *     "2024-11-18": [
+         *       { "id": "slot_2024-11-18_0900", "startTime": "9:00 AM", "endTime": "10:00 AM" }
+         *     ]
+         *   }
+         * }
+         */
+        const defaultData = {
+            businessName: "myKaarma",
+            appointmentType: "appointment",
+            webhookUrl: "",
+            slots: {
+                "2024-11-18": [
+                    { startTime: "9:00 AM", endTime: "10:00 AM" },
+                    { startTime: "11:00 AM", endTime: "12:00 PM" }
+                ],
+                "2024-11-19": [
+                    { startTime: "2:00 PM", endTime: "3:00 PM" }
+                ]
+            }
+        };
+
+        function parseAppointmentData() {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get("data");
+
+            if (!encoded) return defaultData;
+
+            try {
+                return JSON.parse(decodeURIComponent(encoded));
+            } catch (error) {
+                console.warn("Unable to parse data parameter. Falling back to defaults.", error);
+                return defaultData;
+            }
+        }
+
+        function createSlotId(date, startTime, index) {
+            const normalizedTime = (startTime || "")
+                .toLowerCase()
+                .replace(/[:\s]/g, "");
+            return `slot_${date}_${normalizedTime}_${index}`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric"
+            });
+        }
+
+        function showStatus(message, type = "success") {
+            const statusEl = document.getElementById("status");
+            statusEl.textContent = message;
+            statusEl.className = `status show ${type}`;
+        }
+
+        function renderSlots(data) {
+            const container = document.getElementById("slotsContainer");
+            container.innerHTML = "";
+
+            document.getElementById("pageTitle").textContent = `${data.businessName} availability`;
+            document.getElementById("businessTagline").textContent = `Tap a slot to confirm your ${data.appointmentType}.`;
+
+            const dates = Object.keys(data.slots || {});
+            if (!dates.length) {
+                container.innerHTML = `<div class="empty-state">No open slots were provided.</div>`;
+                return;
+            }
+
+            dates.sort().forEach((date) => {
+                const dayCard = document.createElement("section");
+                dayCard.className = "day-card";
+                dayCard.innerHTML = `<h2>${formatDate(date)}</h2>`;
+
+                const list = document.createElement("div");
+                list.className = "slot-list";
+
+                (data.slots[date] || []).forEach((slot, index) => {
+                    const slotId = slot.id || createSlotId(date, slot.startTime, index + 1);
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "slot-button";
+                    btn.dataset.slotId = slotId;
+                    btn.innerHTML = `
+                        <span>${slot.startTime} – ${slot.endTime}</span>
+                        <small>Tap to confirm</small>
+                    `;
+                    btn.addEventListener("click", () => bookSlot({
+                        slotId,
+                        date,
+                        startTime: slot.startTime,
+                        endTime: slot.endTime
+                    }, data.webhookUrl));
+                    list.appendChild(btn);
+                });
+
+                if (!list.children.length) {
+                    list.innerHTML = `<div class="empty-state">No times for this day.</div>`;
+                }
+
+                dayCard.appendChild(list);
+                container.appendChild(dayCard);
+            });
+        }
+
+        async function bookSlot(slot, webhookUrl) {
+            if (!webhookUrl) {
+                showStatus("No webhook URL provided. Please configure one.", "error");
+                return;
+            }
+
+            const payload = {
+                slotId: slot.slotId,
+                date: slot.date || "",
+                startTime: slot.startTime,
+                endTime: slot.endTime
+            };
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Webhook responded with ${response.status}`);
+                }
+
+                showStatus("Thanks! Your slot request was submitted.", "success");
+            } catch (error) {
+                console.error("Failed to call webhook", error);
+                showStatus("Sorry, we couldn't submit that slot. Please retry.", "error");
+            }
+        }
+
+        const appointmentData = parseAppointmentData();
+        renderSlots(appointmentData);
+    </script>
+</body>
+</html>
