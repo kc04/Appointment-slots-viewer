@@ -99,7 +99,8 @@
         }
 
         .slot-button small {
-            color: var(--muted);
+            color: var(--accent-light);
+            font-weight: 700;
         }
 
         .status {
@@ -204,12 +205,13 @@
         }
 
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "long",
-                day: "numeric"
+            const date = new Date(`${dateString}T00:00:00`);
+            const day = date.toLocaleDateString(undefined, { weekday: "long" });
+            const dateMonth = date.toLocaleDateString(undefined, {
+                day: "numeric",
+                month: "long"
             });
+            return `${dateMonth} (${day})`;
         }
 
         function showStatus(message, type = "success") {
@@ -222,7 +224,7 @@
             const container = document.getElementById("slotsContainer");
             container.innerHTML = "";
 
-            document.getElementById("pageTitle").textContent = `${data.businessName} availability`;
+            document.getElementById("pageTitle").textContent = `${data.businessName} Availability`;
             document.getElementById("businessTagline").textContent = `Tap a slot to confirm your ${data.appointmentType}.`;
 
             const dates = Object.keys(data.slots || {});
