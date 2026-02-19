@@ -99,7 +99,12 @@
         }
 
         .slot-button small {
-            color: var(--muted);
+            color: var(--accent-light);
+            font-weight: 700;
+            background: rgba(79, 70, 229, 0.2);
+            border: 1px solid rgba(124, 116, 255, 0.35);
+            border-radius: 999px;
+            padding: 3px 8px;
         }
 
         .status {
@@ -204,12 +209,12 @@
         }
 
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "long",
-                day: "numeric"
-            });
+            const [year, month, day] = dateString.split("-").map(Number);
+            const date = new Date(year, month - 1, day);
+            const dayOfMonth = new Intl.DateTimeFormat(undefined, { day: "numeric" }).format(date);
+            const monthName = new Intl.DateTimeFormat(undefined, { month: "long" }).format(date);
+            const weekdayName = new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(date);
+            return `${dayOfMonth} ${monthName} (${weekdayName})`;
         }
 
         function showStatus(message, type = "success") {
@@ -222,7 +227,7 @@
             const container = document.getElementById("slotsContainer");
             container.innerHTML = "";
 
-            document.getElementById("pageTitle").textContent = `${data.businessName} availability`;
+            document.getElementById("pageTitle").textContent = `${data.businessName} Availability`;
             document.getElementById("businessTagline").textContent = `Tap a slot to confirm your ${data.appointmentType}.`;
 
             const dates = Object.keys(data.slots || {});
