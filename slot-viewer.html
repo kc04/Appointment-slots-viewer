@@ -37,6 +37,23 @@
             max-width: 980px;
             margin: 0 auto;
             padding: 48px 20px 64px;
+            position: relative;
+        }
+
+        .page::before {
+            content: "";
+            position: absolute;
+            inset: 78px 8px 8px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(251, 146, 60, 0.22);
+            backdrop-filter: blur(2px);
+            z-index: 0;
+        }
+
+        .page > * {
+            position: relative;
+            z-index: 1;
         }
 
         .top-banner {
@@ -70,6 +87,7 @@
             line-height: 1.1;
             letter-spacing: -0.02em;
             color: #111827;
+            text-shadow: 0 4px 18px rgba(249, 115, 22, 0.16);
         }
 
         .slots {
@@ -87,6 +105,13 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: cardIn 300ms ease both;
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
         }
 
         .day-card h2 {
@@ -122,6 +147,11 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 16px rgba(234, 88, 12, 0.18);
             background: linear-gradient(180deg, rgba(249, 115, 22, 0.34), rgba(249, 115, 22, 0.25));
+        }
+
+        .slot-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.14);
         }
 
         .slot-button:focus-visible {
@@ -170,10 +200,25 @@
             padding: 26px 0;
         }
 
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @media (max-width: 600px) {
             .page {
                 padding-top: 30px;
                 padding-bottom: 42px;
+            }
+
+            .page::before {
+                inset: 60px 6px 6px;
             }
 
             .day-card {
