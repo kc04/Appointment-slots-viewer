@@ -6,108 +6,175 @@
     <title>Choose Your Appointment Slot</title>
     <style>
         :root {
-            color-scheme: light dark;
-            --bg: #0d1017;
-            --card: #151a24;
-            --accent: #4f46e5;
-            --accent-light: #7c74ff;
-            --text: #f4f6fb;
-            --muted: #9ba1b4;
-            --success: #16a34a;
-            --danger: #dc2626;
-            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --bg: #fff7ed;
+            --bg-accent: #ffedd5;
+            --card: #ffffff;
+            --card-border: rgba(249, 115, 22, 0.2);
+            --accent: #f97316;
+            --accent-strong: #ea580c;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --success: #15803d;
+            --danger: #b91c1c;
+            font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
             min-height: 100vh;
-            background: radial-gradient(circle at top, rgba(79, 70, 229, 0.45), transparent 55%), var(--bg);
+            background:
+                radial-gradient(1000px 460px at 10% -20%, rgba(249, 115, 22, 0.28), transparent 55%),
+                radial-gradient(820px 380px at 95% 0%, rgba(251, 191, 36, 0.18), transparent 60%),
+                linear-gradient(180deg, var(--bg-accent), var(--bg));
             color: var(--text);
         }
 
         .page {
-            max-width: 960px;
+            max-width: 980px;
             margin: 0 auto;
-            padding: 40px 20px 64px;
+            padding: 48px 20px 64px;
+            position: relative;
+        }
+
+        .page::before {
+            content: "";
+            position: absolute;
+            inset: 78px 8px 8px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(251, 146, 60, 0.22);
+            backdrop-filter: blur(2px);
+            z-index: 0;
+        }
+
+        .page > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-banner {
+            width: fit-content;
+            margin: 0 auto 18px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(249, 115, 22, 0.4);
+            background: linear-gradient(135deg, #f97316, #fb923c 48%, #facc15);
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.25);
         }
 
         header {
             text-align: center;
-            margin-bottom: 48px;
-        }
-
-        header h1 {
-            margin-bottom: 12px;
-            font-size: clamp(2rem, 6vw, 2.75rem);
+            margin-bottom: 36px;
         }
 
         header p {
-            margin: 0;
+            margin: 0 0 10px;
             color: var(--muted);
-            font-size: 1.05rem;
+            font-size: 1rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.95rem, 5.2vw, 2.9rem);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: #111827;
+            text-shadow: 0 4px 18px rgba(249, 115, 22, 0.16);
         }
 
         .slots {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            gap: 18px;
         }
 
         .day-card {
-            background: var(--card);
+            background: linear-gradient(180deg, #ffffff, #fffaf5);
+            border: 1px solid var(--card-border);
             border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: cardIn 300ms ease both;
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
         }
 
         .day-card h2 {
             margin: 0;
-            font-size: 1.15rem;
+            font-size: 1.06rem;
+            letter-spacing: 0.01em;
+            color: #374151;
         }
 
         .slot-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .slot-button {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 14px 16px;
-            background: rgba(79, 70, 229, 0.12);
-            color: inherit;
+            width: 100%;
+            border: 1px solid rgba(249, 115, 22, 0.34);
+            border-radius: 12px;
+            padding: 13px 14px;
+            background: linear-gradient(180deg, rgba(249, 115, 22, 0.24), rgba(249, 115, 22, 0.18));
+            color: #7c2d12;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1rem;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+            font-size: 0.97rem;
+            text-align: left;
         }
 
         .slot-button:hover {
-            background: rgba(79, 70, 229, 0.25);
             transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(234, 88, 12, 0.18);
+            background: linear-gradient(180deg, rgba(249, 115, 22, 0.34), rgba(249, 115, 22, 0.25));
+        }
+
+        .slot-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(234, 88, 12, 0.14);
+        }
+
+        .slot-button:focus-visible {
+            outline: 3px solid rgba(249, 115, 22, 0.33);
+            outline-offset: 2px;
         }
 
         .slot-button span {
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .slot-button small {
-            color: var(--muted);
+            color: #9a3412;
+            font-weight: 600;
         }
 
         .status {
-            margin-top: 32px;
-            padding: 16px;
-            border-radius: 16px;
+            margin-top: 24px;
+            padding: 14px 16px;
+            border-radius: 12px;
             text-align: center;
             display: none;
+            border: 1px solid transparent;
         }
 
         .status.show {
@@ -115,25 +182,58 @@
         }
 
         .status.success {
-            background: rgba(22, 163, 74, 0.15);
+            background: rgba(34, 197, 94, 0.12);
             color: var(--success);
+            border-color: rgba(34, 197, 94, 0.3);
         }
 
         .status.error {
-            background: rgba(220, 38, 38, 0.15);
+            background: rgba(239, 68, 68, 0.12);
             color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
         .empty-state {
             text-align: center;
             color: var(--muted);
-            font-size: 1.1rem;
-            padding: 40px 0;
+            font-size: 1rem;
+            padding: 26px 0;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding-top: 30px;
+                padding-bottom: 42px;
+            }
+
+            .page::before {
+                inset: 60px 6px 6px;
+            }
+
+            .day-card {
+                padding: 16px;
+            }
+
+            .slot-button {
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="page">
+        <div class="top-banner">Hii good morning</div>
         <header>
             <p id="businessTagline">Select the time that works best for you</p>
             <h1 id="pageTitle">Available Appointment Slots</h1>
@@ -222,7 +322,7 @@
             const container = document.getElementById("slotsContainer");
             container.innerHTML = "";
 
-            document.getElementById("pageTitle").textContent = `${data.businessName} availability`;
+            document.getElementById("pageTitle").textContent = "Service availability";
             document.getElementById("businessTagline").textContent = `Tap a slot to confirm your ${data.appointmentType}.`;
 
             const dates = Object.keys(data.slots || {});
